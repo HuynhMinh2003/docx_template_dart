@@ -32,11 +32,10 @@ void _updateData(Archive arch, List<int> data) {
     // Tạo một file mới thay thế
     final updatedFile = ArchiveFile(existingFile.name, data.length, data);
     // Xóa file cũ và thêm file mới vào
-    arch.removeFile(existingFile.name);
+    arch.removeFile(existingFile);
     arch.addFile(updatedFile);
   }
 }
-
 }
 
 class DocxXmlEntry extends DocxEntry {
