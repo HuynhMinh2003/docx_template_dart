@@ -23,17 +23,15 @@ abstract class DocxEntry {
   void _updateArchive(Archive arch);
 
   void _updateData(Archive arch, List<int> data) {
-  if (_index < 0) {
-    arch.addFile(ArchiveFile(_name, data.length, data));
-  } else {
-    final mutableFiles = arch.files.toList();
-    mutableFiles[_index] = ArchiveFile(_name, data.length, data);
-    arch.files
-      ..clear()
-      ..addAll(mutableFiles);
+    if (_index < 0) {
+      arch.addFile(ArchiveFile(_name, data.length, data));
+    } else {
+      // Sửa lại việc xử lý danh sách files để tránh lỗi unmodifiable list
+      final mutableFiles = List<ArchiveFile>.from(arch.files); // Tạo một danh sách mới từ `arch.files`
+      mutableFiles[_index] = ArchiveFile(_name, data.length, data); // Cập nhật phần tử
+      arch.files = mutableFiles; // Gán lại cho `arch.files`
+    }
   }
-}
-
 }
 
 class DocxXmlEntry extends DocxEntry {
@@ -60,7 +58,7 @@ class DocxXmlEntry extends DocxEntry {
     if (doc != null) {
       final data = doc!.toXmlString(pretty: false);
       List<int> out = utf8.encode(data);
-      _updateData(arch, out);
+      _updateData(arch, out); // Cập nhật dữ liệu trong archive
     }
   }
 }
@@ -127,8 +125,6 @@ class DocxRelsEntry extends DocxXmlEntry {
     return r;
   }
 
-  /* <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.jpeg"/> */
-
   @override
   void _load(Archive arch, String entryName) {
     super._load(arch, entryName);
@@ -152,7 +148,7 @@ class DocxBinEntry extends DocxEntry {
 
   @override
   void _updateArchive(Archive arch) {
-    _updateData(arch, _data!);
+    _updateData(arch, _data!); // Cập nhật dữ liệu trong archive
   }
 }
 
@@ -174,10 +170,7 @@ class DocxManager {
   }
 
   bool checkMapContainsKeys(String name) {
-    if (!_map.containsKey(name)) {
-      return true;
-    }
-    return false;
+    return !_map.containsKey(name);
   }
 
   void add(String name, DocxEntry e) {
@@ -205,7 +198,7 @@ class DocxManager {
 
   void updateArch() {
     _map.forEach((key, value) {
-      value._updateArchive(arch);
+      value._updateArchive(arch); // Cập nhật tất cả các mục trong archive
     });
   }
 }
