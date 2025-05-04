@@ -22,16 +22,21 @@ abstract class DocxEntry {
 
   void _updateArchive(Archive arch);
 
-  void _updateData(Archive arch, List<int> data) {
-    if (_index < 0) {
-      arch.addFile(ArchiveFile(_name, data.length, data));
-    } else {
-      // Sửa lại việc xử lý danh sách files để tránh lỗi unmodifiable list
-      final mutableFiles = List<ArchiveFile>.from(arch.files); // Tạo một danh sách mới từ `arch.files`
-      mutableFiles[_index] = ArchiveFile(_name, data.length, data); // Cập nhật phần tử
-      arch.files = mutableFiles; // Gán lại cho `arch.files`
-    }
+void _updateData(Archive arch, List<int> data) {
+  if (_index < 0) {
+    // Nếu không có file nào, thêm mới file
+    arch.addFile(ArchiveFile(_name, data.length, data));
+  } else {
+    // Nếu đã có file, chỉ cập nhật file đó
+    final existingFile = arch.files[_index];
+    // Tạo một file mới thay thế
+    final updatedFile = ArchiveFile(existingFile.name, data.length, data);
+    // Xóa file cũ và thêm file mới vào
+    arch.removeFile(existingFile.name);
+    arch.addFile(updatedFile);
   }
+}
+
 }
 
 class DocxXmlEntry extends DocxEntry {
